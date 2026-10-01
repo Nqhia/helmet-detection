@@ -1,0 +1,21 @@
+# Chỉ SPLIT TEST của từng dataset — dùng cho báo cáo model cuối (reports/). Cùng schema với datasets.yaml.
+datasets:
+  - name: kerala_cctv_test        # 394 ảnh, figshare 32310867 split test
+    path: data/kerala
+    subdirs: [test]
+    map_to: {Helmet: helmet, No_Helmet: no_helmet}
+    level: head
+  - name: hcmc_v10_test           # 200 ảnh, Roboflow the-intruder v10 split test
+    path: data/hcmc_v10
+    subdirs: [test]
+    map_to: {Helmet: helmet, NOHelmet: no_helmet}
+    level: head
+  - name: bikes_voc_all           # 764 ảnh, Kaggle andrewmvd (không có split; nhiều model đã train trên ảnh này -> chỉ tham khảo)
+    path: data/bikes_voc
+    map_to: {"With Helmet": helmet, "Without Helmet": no_helmet}
+    level: head
+  - name: mhdd_hcmc_test          # 100 ảnh, MHDD split test (chỉ lớp helmet)
+    path: data/mhdd
+    subdirs: [test]
+    map_to: {helmet: helmet, motorcycle: ignore}
+    level: head

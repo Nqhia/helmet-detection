@@ -1,0 +1,19 @@
+{
+  "onnx": "smolry_yolo11s_640.onnx",
+  "labels_file": "smolry_yolo11s_640.txt",
+  "input": "1x3x640x640 RGB float32 /255, letterbox",
+  "output": "(1, 100, 6) = [x1,y1,x2,y2,conf,cls] toạ độ letterbox",
+  "raw_names": [
+    "helmet",
+    "no-helmet"
+  ],
+  "canonical_map": {
+    "helmet": "helmet",
+    "no-helmet": "no_helmet"
+  },
+  "box_level": "head",
+  "suggested_conf": 0.3,
+  "source_weights": "weights/helmet/smolry_yolo11s.pt (pipeline/scripts/download.py --models --names smolry_yolo11s)",
+  "opset": 17,
+  "source_candidate": "smolry_yolo11s"
+}

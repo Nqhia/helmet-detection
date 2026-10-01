@@ -1,0 +1,23 @@
+{
+  "onnx": "jingjing_yolov8n_plate_640.onnx",
+  "labels_file": "jingjing_yolov8n_plate_640.txt",
+  "input": "1x3x640x640 RGB float32 /255, letterbox",
+  "output": "(1, 100, 6) = [x1,y1,x2,y2,conf,cls] toạ độ letterbox",
+  "raw_names": [
+    "bike",
+    "helmet",
+    "no-helmet",
+    "number-plate"
+  ],
+  "canonical_map": {
+    "bike": "motorcycle",
+    "helmet": "helmet",
+    "no-helmet": "no_helmet",
+    "number-plate": "plate"
+  },
+  "box_level": "head",
+  "suggested_conf": 0.3,
+  "source_weights": "weights/helmet/jingjing_yolov8n_plate.pt (pipeline/scripts/download.py --models --names jingjing_yolov8n_plate)",
+  "opset": 17,
+  "source_candidate": "jingjing_yolov8n_plate"
+}

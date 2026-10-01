@@ -1,0 +1,24 @@
+# Dataset đánh giá (YOLO format, tạo bởi scripts/prepare_datasets.py). `map_to`: tên lớp -> helmet | no_helmet | ignore.
+# `level`: head (box đầu) | rider (box người/xe kèm trạng thái -> khớp theo tâm đầu nằm trong box).
+# `names` đọc từ data/<name>/names.txt nếu không khai. `subdirs`: chỉ lấy split này. `max_images`: lấy mẫu đều.
+# Chi tiết nguồn/giấy phép: research_notes/pipeline_build/eval_datasets.md
+datasets:
+  - name: kerala_cctv            # figshare 32310867, NIT Calicut 2026, CC BY 4.0. CCTV góc cao Ấn Độ, 928 khung IR đêm.
+    path: data/kerala
+    images: images
+    labels: labels
+    subdirs: [val, test]         # 785 + 394 ảnh; train (2,748) bỏ để benchmark nhanh (không train nên dùng được mọi split)
+    map_to: {Helmet: helmet, No_Helmet: no_helmet}
+    level: head
+  - name: hcmc_v10               # Roboflow the-intruder v10 (HF harijawahar), CC BY 4.0. Khung video Pexels TP.HCM + ảnh stock, 640x640 kéo giãn.
+    path: data/hcmc_v10
+    map_to: {Helmet: helmet, NOHelmet: no_helmet}
+    level: head
+  - name: bikes_voc              # Kaggle andrewmvd (HF cute-face mirror), 764 ảnh web ~400px, xe máy + xe đạp.
+    path: data/bikes_voc
+    map_to: {"With Helmet": helmet, "Without Helmet": no_helmet}
+    level: head
+  - name: mhdd_hcmc              # MHDD SoICT 2024, CC BY 4.0. Camera công cộng TP.HCM 1280x720 ngày+đêm, đầu ~10 px, CHỈ có lớp helmet.
+    path: data/mhdd
+    map_to: {helmet: helmet, motorcycle: ignore}
+    level: head

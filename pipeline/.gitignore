@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.pyc
+weights/**/*.pt
+weights/**/*.onnx
+weights/**/*.pth
+weights/**/*.safetensors
+weights/clip/
+data/*
+!data/demo/
+downloads/
+outputs/*
+!outputs/README.md
+runs/
+setup_env.log
+setup_env.err
+*.part

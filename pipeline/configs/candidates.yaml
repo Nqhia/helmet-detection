@@ -1,0 +1,296 @@
+# Danh mục model. `role`: vehicle | helmet | openvocab. `classes`: nhãn thô của model -> nhãn canonical
+# (helmet | no_helmet | head | rider_helmet | rider_no_helmet | rider | person | motorcycle | bicycle | plate | ignore).
+# `box_level`: head | rider | coco. `download`: xem scripts/download.py. Mọi URL đã kiểm tra HTTP 200 không cần đăng nhập
+# (30/09/2026, xem research_notes/pipeline_build/pretrained_models.md). Tên lớp lấy thẳng từ checkpoint.
+# LƯU Ý LICENSE: trọng số YOLO của Ultralytics mặc định AGPL-3.0; nhiều repo không ghi license -> xem REPORT.md.
+candidates:
+  # ---------------- Tầng 0: xe + người ----------------
+  - name: coco_yolo11n
+    role: vehicle
+    weights: weights/coco/yolo11n.pt
+    imgsz: 640
+    conf: 0.25
+    box_level: coco
+    classes: {person: person, motorcycle: motorcycle, bicycle: bicycle}
+    download: {type: ultralytics}
+    notes: "COCO 39.5 mAP; nhanh nhất. Cùng cỡ với object detector của AI worker."
+  - name: coco_yolo11s
+    role: vehicle
+    weights: weights/coco/yolo11s.pt
+    imgsz: 640
+    conf: 0.25
+    box_level: coco
+    classes: {person: person, motorcycle: motorcycle, bicycle: bicycle}
+    download: {type: ultralytics}
+    notes: "COCO 47.0 mAP; recall xe máy/người ngồi tốt hơn n."
+  - name: coco_yolo26n
+    role: vehicle
+    weights: weights/coco/yolo26n.pt
+    imgsz: 640
+    conf: 0.25
+    box_level: coco
+    classes: {person: person, motorcycle: motorcycle, bicycle: bicycle}
+    download: {type: ultralytics}
+    notes: "YOLO26n COCO, cùng họ/cỡ với object detector của AI worker."
+  - name: vhoc_stage1_motorcyclist_yolo26l
+    role: vehicle
+    weights: weights/vehicle/vhoc_detect_vehicle_yolo26l.pt
+    imgsz: 640
+    conf: 0.25
+    box_level: coco
+    classes: {motorcyclist: motorcycle}
+    download: {type: hf, repo_id: 2vhoc/helmet-detection-traffic, filename: stage1/detect_vehicle.pt,
+               dest: weights/vehicle/vhoc_detect_vehicle_yolo26l.pt}
+    notes: "Stage 1 của pipeline VN 2vhoc: box 'motorcyclist' = xe + người. 158 MB (kèm optimizer). Không có metric/license."
+
+  # ---------------- Tầng 1: model mũ pretrained (giao thông xe máy) ----------------
+  - name: dtdat_yolo26m
+    role: helmet
+    weights: weights/helmet/dtdat_yolo26m.pt
+    imgsz: 640
+    conf: 0.25
+    box_level: head
+    classes: {motorbike: motorcycle, helmet: helmet, non-helmet: no_helmet}
+    download: {type: hf, repo_id: dtdat1234/helmet-violation-detection-models, filename: checkpoints/yolo_best.pt,
+               dest: weights/helmet/dtdat_yolo26m.pt}
+    notes: "YOLO26m, 44 MB. Tập 2,309/330/659 ảnh đa nguồn + pseudo-label, tác giả VN (06/2026). Không công bố metric/license."
+  - name: dtdat_rtdetr_l
+    role: helmet
+    arch: rtdetr
+    weights: weights/helmet/dtdat_rtdetr_l.pt
+    imgsz: 640
+    conf: 0.25
+    box_level: head
+    classes: {motorbike: motorcycle, helmet: helmet, non-helmet: no_helmet}
+    download: {type: hf, repo_id: dtdat1234/helmet-violation-detection-models, filename: checkpoints/rtdetr_best.pt,
+               dest: weights/helmet/dtdat_rtdetr_l.pt}
+    notes: "RT-DETR-L cùng dữ liệu với dtdat_yolo26m (66 MB, Apache-2.0 kiến trúc)."
+  - name: vhoc_stage2_yolo26l
+    role: helmet
+    weights: weights/helmet/vhoc_stage2_yolo26l.pt
+    imgsz: 640
+    conf: 0.25
+    box_level: head
+    classes: {helmet: helmet, nohelmet: no_helmet, licenseplate: plate}
+    download: {type: hf, repo_id: 2vhoc/helmet-detection-traffic, filename: stage2/mu_bien_so_stage2.pt,
+               dest: weights/helmet/vhoc_stage2_yolo26l.pt}
+    notes: "YOLO26l, 53 MB, train trên CROP người đi xe (VN, 200 epoch) -> dùng helmet_mode=crop. Không có metric/license."
+  - name: smolry_yolo11s
+    role: helmet
+    weights: weights/helmet/smolry_yolo11s.pt
+    imgsz: 640
+    conf: 0.25
+    conf_serve: 0.30       # ngưỡng phục vụ khuyến nghị (đo trên tập test, kèm xác nhận 3/8 theo track)
+    box_level: head
+    classes: {helmet: helmet, no-helmet: no_helmet}
+    download: {type: hf, repo_id: Smolry/Helmet-classifer, filename: helmet.pt, dest: weights/helmet/smolry_yolo11s.pt}
+    notes: "YOLO11s 19 MB, Roboflow 'Helmet-and-Non-Helmet-Detection' v2 (traffic/CCTV), AGPL-3.0."
+  - name: nnsohamnn_yolo11m
+    role: helmet
+    weights: weights/helmet/nnsohamnn_yolo11m.pt
+    imgsz: 640
+    conf: 0.25
+    box_level: head
+    classes: {"With Helmet": helmet, "Without Helmet": no_helmet}
+    download: {type: hf, repo_id: nnsohamnn/helmet-detection-yolo11, filename: "yolov11m(100epochs).pt",
+               dest: weights/helmet/nnsohamnn_yolo11m.pt}
+    notes: "YOLO11m 40 MB, Roboflow Bike Helmet Detection (1,376 ảnh xe máy); val mAP50 0.899 / 0.437; MIT."
+  - name: iamtsr_yolov8n
+    role: helmet
+    weights: weights/helmet/iamtsr_yolov8n.pt
+    imgsz: 640
+    conf: 0.25
+    box_level: head
+    classes: {"With Helmet": helmet, "Without Helmet": no_helmet}
+    download: {type: hf, repo_id: iam-tsr/yolov8n-helmet-detection, filename: best.pt, dest: weights/helmet/iamtsr_yolov8n.pt}
+    notes: "YOLOv8n 6 MB, Roboflow ~1,737 ảnh; mAP50 0.881 / 0.538; MIT."
+  - name: ganesh_yolov8n
+    role: helmet
+    weights: weights/helmet/ganesh_yolov8n.pt
+    imgsz: 640
+    conf: 0.25
+    box_level: head
+    classes: {"With Helmet": helmet, "Without Helmet": no_helmet}
+    download: {type: hf, repo_id: Ganesh-Nadkarni/helmet-detection-yolov8, filename: helmet_yolov8n.pt,
+               dest: weights/helmet/ganesh_yolov8n.pt}
+    notes: "YOLOv8n 6 MB, cùng dataset Bike-Helmet-Detection v2; mAP50-95 0.329."
+  - name: jingjing_yolov8n_plate
+    role: helmet
+    weights: weights/helmet/jingjing_yolov8n_plate.pt
+    imgsz: 640
+    conf: 0.25
+    conf_serve: 0.30
+    box_level: head
+    classes: {bike: motorcycle, helmet: helmet, no-helmet: no_helmet, number-plate: plate}
+    download: {type: url, url: "https://raw.githubusercontent.com/Jingjing468/motorcycle-helmet-violation-detection/HEAD/model/helmet_best.pt",
+               dest: weights/helmet/jingjing_yolov8n_plate.pt}
+    notes: "YOLOv8n 6 MB, Roboflow 'Helmet and Number Plate Detection for Motorbike Safety' v4 (~8.5k ảnh); mAP50 0.942 / 0.690; không có LICENSE."
+  - name: sharath_yolov8n
+    role: helmet
+    weights: weights/helmet/sharath_yolov8n.pt
+    imgsz: 640
+    conf: 0.25
+    box_level: head
+    classes: {"With helmet": helmet, "Without helmet": no_helmet}
+    download: {type: hf, repo_id: sharathhhhh/safetyHelmet-detection-yolov8, filename: best.pt, dest: weights/helmet/sharath_yolov8n.pt}
+    notes: "YOLOv8n 6 MB, rider CCTV, 28 epoch; Apache-2.0 (license sạch nhất). Lớp 1 có 2 khoảng trắng đầu -> mapper đã chuẩn hoá."
+  - name: anubhav_yolov8s_rider_plate
+    role: helmet
+    weights: weights/helmet/anubhav_yolov8s_rider_plate.pt
+    imgsz: 640
+    conf: 0.25
+    box_level: head
+    classes: {"with helmet": helmet, "without helmet": no_helmet, rider: ignore, "number plate": plate}
+    download: {type: url, url: "https://raw.githubusercontent.com/AnubhavagarwalDev/helmet_detection_usingYOLOv8s/HEAD/best.pt",
+               dest: weights/helmet/anubhav_yolov8s_rider_plate.pt}
+    notes: "YOLOv8s 23 MB, lineage Kaggle rider/helmet/plate (Ấn Độ); không metric/license."
+  - name: csay_cambodia_yolov8s
+    role: helmet
+    weights: weights/helmet/csay_cambodia_yolov8s_v5.pt
+    imgsz: 640
+    conf: 0.25
+    box_level: head
+    classes: {helmet: helmet, no_helmet: no_helmet}
+    download: {type: url, url: "https://raw.githubusercontent.com/csay1212/cambodian-traffic-helmet-detection-yolov8/HEAD/models/our_models/v5/best.pt",
+               dest: weights/helmet/csay_cambodia_yolov8s_v5.pt}
+    notes: "YOLOv8s 22 MB, video giao thông Campuchia (ngày/đêm/mưa); mAP50 0.63 trời quang / 0.91 mưa; không license."
+  - name: lephuocthai_yolo11l
+    role: helmet
+    weights: weights/helmet/lephuocthai_yolo11l.pt
+    imgsz: 640
+    conf: 0.25
+    box_level: head
+    classes: {LP: plate, helmet: helmet, "no helmet": no_helmet, "Triple riding": ignore, "Using mobile": ignore, Wheeling: ignore}
+    download: {type: hf, repo_id: LePhuocThai003/nohelmet_V11, filename: nohelmet_V11.pt, dest: weights/helmet/lephuocthai_yolo11l.pt}
+    notes: "YOLO11l 51 MB, tác giả VN, gộp dataset Kaggle; không README/metric/license."
+  - name: punmyidol_yolo11m
+    role: helmet
+    weights: weights/helmet/punmyidol_yolo11m.pt
+    imgsz: 640
+    conf: 0.25
+    box_level: head
+    classes: {"With-Helmet": helmet, "Without Helmet": no_helmet}
+    download: {type: hf, repo_id: punmyidol/helmet-detection-v11m, filename: helmet-detection-v11m.pt, dest: weights/helmet/punmyidol_yolo11m.pt}
+    notes: "YOLO11m 40 MB, Roboflow 'helmet-detection' (tác giả có repo motorcycle-helmet); không metric/license."
+  - name: justlikethat_yolov8m
+    role: helmet
+    weights: weights/helmet/justlikethat_yolov8m.pt
+    imgsz: 640
+    conf: 0.25
+    box_level: head
+    classes: {helmet: helmet, nohelmet: no_helmet}
+    download: {type: hf, repo_id: justlikethat06/helmet-model, filename: best.pt, dest: weights/helmet/justlikethat_yolov8m.pt}
+    notes: "YOLOv8m 52 MB, Kaggle; không README."
+  - name: rafay_yolo11s
+    role: helmet
+    weights: weights/helmet/rafay_yolo11s.pt
+    imgsz: 640
+    conf: 0.25
+    box_level: head
+    classes: {helmet: helmet, no_helmet: no_helmet}
+    download: {type: hf, repo_id: ProgrammingWithRafay/helmet-detection-yolo, filename: best.pt, dest: weights/helmet/rafay_yolo11s.pt}
+    notes: "YOLO11s 19 MB, Kaggle 'unified-dataset'; không README."
+  - name: bilalgondal_yolov8n_riderlevel
+    role: helmet
+    weights: weights/helmet/bilalgondal_yolov8n_riderlevel.pt
+    imgsz: 640
+    conf: 0.25
+    box_level: rider
+    classes: {driver_with_helmet: rider_helmet, passenger_with_helemt: rider_helmet, driver_without_helmet: rider_no_helmet,
+              passenger_without_helemt: rider_no_helmet, bike: motorcycle, driver: rider, passenger: rider}
+    download: {type: hf, repo_id: bilalgondal/helmet_dectionsystem, filename: helmet_detector_best.pt,
+               dest: weights/helmet/bilalgondal_yolov8n_riderlevel.pt}
+    notes: "YOLOv8n 6 MB, duy nhất có lớp rider-level driver/passenger; không metric/license."
+
+  # ---------------- Two-stage: head detector + classifier ----------------
+  - name: twostage_abel_head_effnet
+    role: helmet
+    backend: twostage
+    box_level: head
+    head_detector:
+      weights: weights/heads/abel_yolov8n_head.pt
+      imgsz: 640
+      conf: 0.25
+      classes: {head: head}
+    classifier:
+      weights: weights/cls/vivekvar_helmet_head_v2.pt
+      arch: efficientnet_b0
+      input: 224
+      crop_expand: 1.2
+      labels: [helmet, no_helmet]     # state_dict thuần không có nhãn; thứ tự ImageFolder (alphabet) — kiểm tra bằng 'swaps' khi eval
+      labels_map: {helmet: helmet, no_helmet: no_helmet}
+    download:
+      - {type: hf, repo_id: AbelKidane/yolov8headdetector, filename: best.pt, dest: weights/heads/abel_yolov8n_head.pt}
+      - {type: hf, repo_id: vivekvar/helmet-v5, filename: models/helmet_head_v2.pt, dest: weights/cls/vivekvar_helmet_head_v2.pt}
+    notes: "Head YOLOv8n (MIT, dữ liệu không rõ) + EfficientNet-B0 helmet/no_helmet (Indian CCTV, F1 0.864, Apache-2.0)."
+  - name: twostage_hollywood_head_effnet
+    role: helmet
+    backend: twostage
+    box_level: head
+    head_detector:
+      weights: weights/heads/abhi_yolov8n_head_hollywood.pt
+      imgsz: 640
+      conf: 0.25
+      classes: {head: head}
+    classifier:
+      weights: weights/cls/vivekvar_helmet_head_v2.pt
+      arch: efficientnet_b0
+      input: 224
+      crop_expand: 1.2
+      labels: [helmet, no_helmet]     # state_dict thuần không có nhãn; thứ tự ImageFolder (alphabet) — kiểm tra bằng 'swaps' khi eval
+      labels_map: {helmet: helmet, no_helmet: no_helmet}
+    download:
+      - {type: hf, repo_id: abhiWanKenobi/yolov8n_head_detection, filename: yolov8n_head_detector.pt, dest: weights/heads/abhi_yolov8n_head_hollywood.pt}
+      - {type: hf, repo_id: vivekvar/helmet-v5, filename: models/helmet_head_v2.pt, dest: weights/cls/vivekvar_helmet_head_v2.pt}
+    notes: "Head YOLOv8n HollywoodHeads (mAP50 0.871, CC-BY-NC-4.0: KHÔNG dùng thương mại) + cùng classifier."
+
+  # ---------------- Open-vocabulary (zero-shot) ----------------
+  - name: yoloworld_s
+    role: openvocab
+    backend: openvocab
+    weights: weights/openvocab/yolov8s-worldv2.pt
+    imgsz: 640
+    conf: 0.10
+    box_level: head
+    derive_no_helmet: true
+    prompts:
+      helmet: ["motorcycle helmet", "helmet"]
+      head: ["human head", "bare head of a person"]
+    download: {type: ultralytics}
+    notes: "YOLO-World v2 S (AGPL). Baseline zero-shot; thử nghiệm cho thấy gần như không sinh no_helmet."
+  - name: yoloe_11s
+    role: openvocab
+    backend: openvocab
+    weights: weights/openvocab/yoloe-11s-seg.pt
+    imgsz: 640
+    conf: 0.10
+    box_level: head
+    derive_no_helmet: true
+    disabled: true
+    prompts:
+      helmet: ["motorcycle helmet", "helmet"]
+      head: ["human head", "bare head of a person"]
+    download: {type: ultralytics}
+    notes: "YOLOE 11S (text prompt, cần MobileCLIP). Tắt mặc định; bật khi cần so sánh."
+
+  # ---------------- Bản ONNX bàn giao (backend onnx = port YoloDetector của worker) ----------------
+  - name: smolry_yolo11s_onnx
+    role: helmet_onnx
+    backend: onnx
+    weights: ../models/smolry_yolo11s_640.onnx
+    labels_file: ../models/smolry_yolo11s_640.txt
+    imgsz: 640
+    conf: 0.25
+    box_level: head
+    classes: {helmet: helmet, no-helmet: no_helmet}
+    notes: "Export end-to-end (1,100,6) opset 17 từ smolry_yolo11s; parity 90% box/IoU 0.94 trên 30 ảnh Kerala."
+  - name: jingjing_yolov8n_plate_onnx
+    role: helmet_onnx
+    backend: onnx
+    weights: weights/onnx/jingjing_yolov8n_plate_640.onnx   # tự export: scripts/export_onnx.py --helmet jingjing_yolov8n_plate
+    labels_file: weights/onnx/jingjing_yolov8n_plate_640.txt
+    imgsz: 640
+    conf: 0.25
+    box_level: head
+    classes: {bike: motorcycle, helmet: helmet, no-helmet: no_helmet, number-plate: plate}
+    notes: "Export end-to-end (1,100,6) opset 17 từ jingjing_yolov8n_plate; parity 98.5% box/IoU 0.97."

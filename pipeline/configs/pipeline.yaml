@@ -1,0 +1,70 @@
+# Cấu hình pipeline mặc định. Ghi đè nhanh bằng cờ CLI (scripts/infer.py --helmet ... --mode ...).
+device: null                # null = tự chọn (cuda nếu có) | "cpu" | "cuda:0"
+camera: cam0
+
+# Tầng 0: COCO detector -> person / motorcycle / bicycle (mặc định 11s cho recall tốt hơn; worker có thể dùng object detector sẵn có)
+vehicle_detector:
+  candidate: coco_yolo11s
+  conf: 0.25
+
+# Tầng 1: model mũ. Đổi `candidate` theo kết quả benchmark (xem REPORT.md / configs/candidates.yaml)
+helmet_detector:
+  candidate: smolry_yolo11s        # #1 benchmark 30/09/2026 (REPORT.md §7-9); dự phòng nhẹ: jingjing_yolov8n_plate
+  conf: 0.30
+  imgsz: 640                       # camera xa/đầu < 16 px: dùng configs/pipeline_far.yaml (imgsz 1280)
+
+# full  = model mũ chạy toàn khung (nhanh, đủ khi đầu >= ~20 px)
+# crop  = chạy trên vùng xe+người đã nới, upscale lên imgsz (đầu nhỏ ở camera cao/xa)
+# both  = gộp hai kết quả bằng NMS (recall cao nhất, tốn ~2x)
+helmet_mode: full           # đo được: full ≈ both về độ chính xác với smolry nhưng nhanh gấp 3-4 (REPORT.md §8)
+fullframe_fallback: true    # không thấy xe -> vẫn chạy full-frame (COCO hay miss xe máy nghiêng/khuất)
+min_vehicle_px: 24
+
+crop:
+  expand: 1.25
+  up: 0.6
+  min_px: 48
+  max_crops: 8
+  merge_iou: 0.5
+
+assoc:
+  person_vehicle_min_overlap: 0.15
+  head_person_min_containment: 0.5
+  head_vehicle_up: 1.3
+  person_vehicle_x_expand: 1.15   # người đứng cạnh xe (tâm ngoài box xe) không bị gom
+  head_vehicle_x_expand: 1.15
+  head_min_rel_size: 0.08         # đầu < 8% bề rộng xe = xe khác ở xa phía sau
+  include_bicycle: false    # luật VN: xe đạp thường không bắt buộc mũ (xe đạp điện COCO thường ra motorcycle)
+  require_vehicle: true     # false = chế độ "đầu lẻ" (công trường/cổng đi bộ) — mỗi đầu là 1 nhóm
+  max_riders: 4
+  min_head_px: 6
+
+tracker:
+  iou_thr: 0.3
+  max_misses: 15
+  min_hits: 2
+
+# Bỏ phiếu theo track: cần >= min_hits lượt có no_helmet (score >= min_score) trong `window` lượt gần nhất
+temporal:
+  window: 8
+  min_hits: 3
+  min_score: 0.35
+  min_track_age: 2
+  cooldown_s: 0             # 0 = mỗi track (xe) chỉ phát 1 sự kiện; >0 = cho phép phát lại sau N giây
+  min_track_speed_px: 0     # camera CỐ ĐỊNH: đặt ~1.5 để chỉ báo xe đang chạy (loại người đứng cạnh xe đỗ); dashcam: 0
+  keep_best_frame: true
+
+output:
+  dir: outputs/run
+  save_video: false
+  save_events: true
+  save_evidence: true
+  draw_coco: false
+  draw_pedestrians: false
+  jpeg_quality: 90
+
+alpr:
+  enabled: false            # cần `pip install fast-alpr`; worker đã có ALPR riêng nên mặc định tắt
+  detector_model: yolo-v9-t-384-license-plate-end2end
+  ocr_model: global-plates-mobile-vit-v2-model
+  min_conf: 0.5

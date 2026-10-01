@@ -1,0 +1,18 @@
+# Profile NHẸ (CPU / nhiều luồng): jingjing_yolov8n_plate (6 MB, 12 ms GPU, ~70 ms CPU onnxruntime) + chế độ both để bù đầu nhỏ.
+# Đo 30/09/2026: Kerala CCTV mAP50 0.453 / AP50 no_helmet 0.339 (both), MHDD 0.183 (both) so với 0.027 (full).
+# LƯU Ý LICENSE: repo gốc của jingjing không có LICENSE -> chỉ dùng nội bộ/đánh giá, dùng thương mại cần xin phép tác giả.
+# Model cũng ra lớp `plate` (biển số) và `bike` -> use_helmet_vehicles gộp vào tầng COCO. Repo gốc không có LICENSE (REPORT.md §10).
+device: null
+camera: cam_lite
+vehicle_detector: {candidate: coco_yolo11n, conf: 0.25}
+helmet_detector: {candidate: jingjing_yolov8n_plate, conf: 0.30, imgsz: 640}
+helmet_mode: both
+fullframe_fallback: true
+use_helmet_vehicles: true
+min_vehicle_px: 24
+crop: {expand: 1.25, up: 0.6, min_px: 48, max_crops: 4, merge_iou: 0.5}
+assoc: {person_vehicle_min_overlap: 0.15, head_person_min_containment: 0.5, head_vehicle_up: 1.3, person_vehicle_x_expand: 1.15, head_vehicle_x_expand: 1.15, include_bicycle: false, require_vehicle: true, max_riders: 4, min_head_px: 6}
+tracker: {iou_thr: 0.3, max_misses: 15, min_hits: 2}
+temporal: {window: 8, min_hits: 3, min_score: 0.35, min_track_age: 2, cooldown_s: 0, keep_best_frame: true}
+output: {dir: outputs/run_lite, save_video: false, save_events: true, save_evidence: true, draw_coco: false, draw_pedestrians: false, jpeg_quality: 90}
+alpr: {enabled: false, detector_model: yolo-v9-t-384-license-plate-end2end, ocr_model: global-plates-mobile-vit-v2-model, min_conf: 0.5}

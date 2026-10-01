@@ -1,0 +1,9 @@
+{
+  "images": 30,
+  "boxes_pt": 41,
+  "boxes_onnx": 40,
+  "matched_iou>=0.5": 37,
+  "mean_iou_matched": 0.9381423992145304,
+  "match_rate": 0.9024390243902439,
+  "onnx_ms_cpu": 148.48020009230822
+}
